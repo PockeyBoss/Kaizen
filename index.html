@@ -343,8 +343,14 @@
             </ul>
           </div>
 
-          <!-- FORMULARIO -->
-          <form id="contactForm" class="card contact-form" novalidate>
+          <!-- FORMULARIO (modificado para enviar automáticamente) -->
+          <form
+            id="contactForm"
+            class="card contact-form"
+            action="https://formsubmit.co/info@kaizenit.com.ar"
+            method="POST"
+            novalidate
+          >
             <h3>Escribinos</h3>
 
             <div class="grid-2">
@@ -413,6 +419,23 @@
               >
             </div>
 
+            <!-- Ocultos para FormSubmit -->
+            <input
+              type="hidden"
+              name="_subject"
+              value="Consulta desde el sitio web"
+            />
+            <input type="hidden" name="_template" value="table" />
+            <input type="hidden" name="_captcha" value="false" />
+            <!-- <input type="hidden" name="_next" value="https://tu-dominio.com/gracias.html" /> -->
+            <input
+              type="text"
+              name="_honey"
+              style="display: none"
+              tabindex="-1"
+              autocomplete="off"
+            />
+
             <div class="form-actions">
               <button type="submit" class="btn-primary">Enviar</button>
               <span
@@ -468,58 +491,39 @@
         });
         document.getElementById('year').textContent = new Date().getFullYear();
       })();
-      // --- Envío por email (mailto) + validación básica ---
+
+      // --- Validación + envío automático (FormSubmit) ---
       const form = document.getElementById('contactForm');
       if (form) {
         const statusEl = document.getElementById('formStatus');
-
         const setError = (input, on) => {
           const field = input.closest('.field');
           field?.classList.toggle('invalid', on);
         };
 
         form.addEventListener('submit', (e) => {
-          e.preventDefault();
-
           const nombre = document.getElementById('nombre');
           const email = document.getElementById('email');
           const mensaje = document.getElementById('mensaje');
           const acepto = document.getElementById('acepto');
 
-          // Validaciones mínimas
           let ok = true;
           setError(nombre, !nombre.value.trim());
+          if (!nombre.value.trim()) ok = false;
           setError(email, !email.validity.valid);
+          if (!email.validity.valid) ok = false;
           setError(mensaje, !mensaje.value.trim());
+          if (!mensaje.value.trim()) ok = false;
           if (!acepto.checked) ok = false;
-          if (
-            !nombre.value.trim() ||
-            !email.validity.valid ||
-            !mensaje.value.trim()
-          )
-            ok = false;
 
           if (!ok) {
+            e.preventDefault();
             statusEl.textContent = 'Revisá los campos marcados.';
             return;
           }
 
-          // Armar mailto
-          const to = 'info@kaizenit.com.ar';
-          const subject = encodeURIComponent('Consulta desde el sitio web');
-          const body = encodeURIComponent(
-            `Nombre: ${nombre.value}
-Empresa: ${document.getElementById('empresa').value || '-'}
-Email: ${email.value}
-Teléfono: ${document.getElementById('telefono').value || '-'}
----
-Mensaje:
-${mensaje.value}`
-          );
-
-          // Abrir cliente de correo
-          window.location.href = `mailto:${to}?subject=${subject}&body=${body}`;
-          statusEl.textContent = 'Abriendo tu cliente de correo...';
+          // No prevenimos el submit => se envía por POST a FormSubmit
+          statusEl.textContent = 'Enviando...';
         });
       }
     </script>
